@@ -1,0 +1,108 @@
+stages:
+  - build
+  - test
+  - package
+  - deploy
+
+variables:
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+  DOCKER_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+
+# Cache Gradle dependencies between jobs
+cache:
+  key: "$CI_COMMIT_REF_SLUG"
+  paths:
+    - .gradle/
+    - build/
+
+# ── Build ──────────────────────────────────────────────────────────────────────
+
+build:
+  stage: build
+  image: eclipse-temurin:17-jdk
+  script:
+    - ./gradlew classes --build-cache
+  artifacts:
+    paths:
+      - build/
+    expire_in: 1 hour
+
+# ── Test ───────────────────────────────────────────────────────────────────────
+
+test:
+  stage: test
+  image: eclipse-temurin:17-jdk
+  services:
+    - docker:dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+    TESTCONTAINERS_HOST_OVERRIDE: docker
+  script:
+    - ./gradlew test --build-cache
+  artifacts:
+    when: always
+    reports:
+      junit: build/test-results/test/**/*.xml
+    paths:
+      - build/reports/tests/
+    expire_in: 7 days
+
+# ── Package ────────────────────────────────────────────────────────────────────
+
+package:
+  stage: package
+  image: docker:24
+  services:
+    - docker:dind
+  variables:
+    DOCKER_TLS_CERTDIR: ""
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - ./gradlew bootJar
+    - docker build -t $DOCKER_IMAGE .
+    - docker push $DOCKER_IMAGE
+    # Tag latest on default branch
+    - |
+      if [ "$CI_COMMIT_BRANCH" = "$CI_DEFAULT_BRANCH" ]; then
+        docker tag $DOCKER_IMAGE $CI_REGISTRY_IMAGE:latest
+        docker push $CI_REGISTRY_IMAGE:latest
+      fi
+  only:
+    - main
+    - master
+    - tags
+
+# ── Deploy (example — adapt to your environment) ──────────────────────────────
+
+deploy:staging:
+  stage: deploy
+  image: alpine:3.19
+  environment:
+    name: staging
+    url: https://staging.example.com
+  before_script:
+    - apk add --no-cache curl
+  script:
+    - echo "Deploy $DOCKER_IMAGE to staging"
+    # Replace with your actual deploy command, e.g. kubectl / helm / ssh
+  only:
+    - main
+    - master
+  when: on_success
+
+deploy:production:
+  stage: deploy
+  image: alpine:3.19
+  environment:
+    name: production
+    url: https://example.com
+  before_script:
+    - apk add --no-cache curl
+  script:
+    - echo "Deploy $DOCKER_IMAGE to production"
+    # Replace with your actual deploy command
+  only:
+    - tags
+  when: manual
