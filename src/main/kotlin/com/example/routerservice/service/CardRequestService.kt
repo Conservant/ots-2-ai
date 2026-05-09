@@ -6,5 +6,6 @@ import java.util.UUID
 
 interface CardRequestService {
     fun process(message: CardRequestMessage)
+    fun retryFailed(batchSize: Int): Int
     fun getById(id: UUID): CardRequestDto
 }

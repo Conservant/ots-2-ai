@@ -28,3 +28,10 @@ spring:
     listener:
       acknowledge-mode: auto
     pub-sub-domain: false
+
+app:
+  card-request-retry:
+    cron: ${CARD_REQUEST_RETRY_CRON:0 */1 * * * *}
+    batch-size: ${CARD_REQUEST_RETRY_BATCH_SIZE:100}
+    lock-at-most-for: ${CARD_REQUEST_RETRY_LOCK_AT_MOST_FOR:PT5M}
+    lock-at-least-for: ${CARD_REQUEST_RETRY_LOCK_AT_LEAST_FOR:PT10S}
