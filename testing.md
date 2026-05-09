@@ -1,16 +1,16 @@
-Выполнение задачи по добавлению шедулера
+# Выполнение задачи по добавлению шедулера
 
 Агент выполнял задачу сначала без использования системы правил, затем с использованием.
 
 В обоих случаях агент создал миграцию для создания таблицы для Shedlock и добавил конфиг для шедулера в файл проекта
 
-CREATE TABLE shedlock (
-name       VARCHAR(64)  NOT NULL,
-lock_until TIMESTAMPTZ  NOT NULL,
-locked_at  TIMESTAMPTZ  NOT NULL,
-locked_by  VARCHAR(255) NOT NULL,
-CONSTRAINT pk_shedlock PRIMARY KEY (name)
-);
+    CREATE TABLE shedlock (
+    name       VARCHAR(64)  NOT NULL,
+    lock_until TIMESTAMPTZ  NOT NULL,
+    locked_at  TIMESTAMPTZ  NOT NULL,
+    locked_by  VARCHAR(255) NOT NULL,
+    CONSTRAINT pk_shedlock PRIMARY KEY (name)
+    );
 
 Созданный шедулер немного отличался.
 С правилами агент вынес знаяения для блокировки шедулера в переменные окружения, что является более гибким решением
