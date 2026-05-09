@@ -35,3 +35,10 @@ app:
     batch-size: ${CARD_REQUEST_RETRY_BATCH_SIZE:100}
     lock-at-most-for: ${CARD_REQUEST_RETRY_LOCK_AT_MOST_FOR:PT5M}
     lock-at-least-for: ${CARD_REQUEST_RETRY_LOCK_AT_LEAST_FOR:PT10S}
+  outbox:
+    destination: ${OUTBOX_DESTINATION:orders.outbox.queue}
+    processor:
+      fixed-delay-ms: ${OUTBOX_PROCESSOR_FIXED_DELAY_MS:5000}
+      batch-size: ${OUTBOX_PROCESSOR_BATCH_SIZE:100}
+      parallel-workers: ${OUTBOX_PROCESSOR_PARALLEL_WORKERS:4}
+      lock-timeout-seconds: ${OUTBOX_PROCESSOR_LOCK_TIMEOUT_SECONDS:60}

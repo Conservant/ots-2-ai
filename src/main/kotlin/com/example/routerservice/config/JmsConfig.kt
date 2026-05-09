@@ -1,6 +1,7 @@
 package com.example.routerservice.config
 
 import com.example.routerservice.domain.CardRequestMessage
+import com.example.routerservice.domain.OutboxMessageDto
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
@@ -44,7 +45,10 @@ class JmsConfig {
         }
         converter.setObjectMapper(mapper)
         converter.setTypeIdMappings(
-            mapOf("CardRequestMessage" to CardRequestMessage::class.java)
+            mapOf(
+                "CardRequestMessage" to CardRequestMessage::class.java,
+                "OutboxMessageDto" to OutboxMessageDto::class.java,
+            )
         )
         return converter
     }
